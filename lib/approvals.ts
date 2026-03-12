@@ -5,6 +5,7 @@ interface ApprovalRow extends RowDataPacket {
     idea_id: number;
     title: string;
     submitted_by: number;
+    name: string;
     stage_name: string;
     created_at: Date;
 }
@@ -41,13 +42,16 @@ export async function getPendingApprovals(userId: number) {
                     ii.id AS idea_id,
                     ii.title,
                     ii.submitted_by,
+                    CONCAT(vup.first_name, ' ', vup.last_name) AS name,
                     aws.stage_name,
                     ii.created_at
                 FROM innovation_approval_transactions iat
                 JOIN innovation_ideas ii
                     ON ii.id = iat.idea_id
-                JOIN  innovation_approval_workflow_stages aws
+                JOIN innovation_approval_workflow_stages aws
                     ON aws.id = iat.workflow_stage_id
+                JOIN org_db.vw_user_profiles vup
+                    ON vup.user_id = ii.submitted_by
                 WHERE
                     iat.approver_id = ?
                     AND iat.status = 'PENDING'
@@ -55,6 +59,8 @@ export async function getPendingApprovals(userId: number) {
             `,
             [userId]
         );
+
+        console.log("ROWS", rows);
 
         return rows;
     } finally {

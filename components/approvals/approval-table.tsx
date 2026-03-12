@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 interface ApprovalRow {
     idea_id: number;
     title: string;
+    name: string;
     submitted_by: number; // could later show name if you fetch it
     stage_name: string;
     created_at: Date | string;
@@ -49,10 +50,11 @@ export default function ApprovalTable({ approvals }: ApprovalTableProps) {
             <Table>
                 <TableHeader className="bg-muted/50">
                     <TableRow>
-                        <TableHead className="w-[45%]">Idea</TableHead>
-                        <TableHead className="w-[20%]">Stage</TableHead>
-                        <TableHead className="w-[20%] hidden sm:table-cell">Submitted</TableHead>
-                        <TableHead className="w-[15%] text-right">Action</TableHead>
+                        <TableHead className="w-[40%]">Idea Title</TableHead>
+                        <TableHead className="w-[15%]">Idea By</TableHead>
+                        <TableHead className="w-[15%]">Stage</TableHead>
+                        <TableHead className="w-[15%] hidden sm:table-cell">Submitted</TableHead>
+                        <TableHead className="w-[15%] text-center">Action</TableHead>
                     </TableRow>
                 </TableHeader>
 
@@ -64,6 +66,15 @@ export default function ApprovalTable({ approvals }: ApprovalTableProps) {
                         >
                             <TableCell className="font-medium">
                                 <div className="line-clamp-2">{approval.title}</div>
+                                {/* <div className="line-clamp-2">{approval.name}</div> */}
+                                <div className="text-xs text-muted-foreground mt-1 sm:hidden">
+                                    {formatDistanceToNow(new Date(approval.created_at), { addSuffix: true })}
+                                </div>
+                            </TableCell>
+
+                            <TableCell className="font-medium">
+                                {/* <div className="line-clamp-2">{approval.title}</div> */}
+                                <div className="line-clamp-2">{approval.name}</div>
                                 <div className="text-xs text-muted-foreground mt-1 sm:hidden">
                                     {formatDistanceToNow(new Date(approval.created_at), { addSuffix: true })}
                                 </div>
@@ -86,7 +97,7 @@ export default function ApprovalTable({ approvals }: ApprovalTableProps) {
                                 {formatDistanceToNow(new Date(approval.created_at), { addSuffix: true })}
                             </TableCell>
 
-                            <TableCell className="text-right">
+                            <TableCell className="text-center">
                                 <Button
                                     variant="ghost"
                                     size="sm"
