@@ -1,6 +1,4 @@
 import { getIdeaDetails } from "@/lib/approvals";
-import { cookies } from "next/headers";
-import ApprovalActions from "@/components/approvals/approval-actions";
 import { Badge } from "@/components/ui/badge";
 import {
     Card,
@@ -11,35 +9,16 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import jwt from "jsonwebtoken";
 import { formatDistanceToNow } from "date-fns";
 import { AlertCircle, Clock, CheckCircle2, XCircle } from "lucide-react";
-
-type JwtPayload = {
-    userId: number;
-};
 
 export default async function IdeaPage({
     params,
 }: {
     params: Promise<{ ideaId: string }>;
 }) {
-    const token = (await cookies()).get("token")?.value;
-    if (!token) return null;
-
-    let decoded: JwtPayload;
-    try {
-        decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
-    } catch {
-        return null;
-    }
-
     const { ideaId } = await params;
     const idea = await getIdeaDetails(Number(ideaId));
-
-    const currentStageStatus = idea.workflow.find(item => item.approver_id === decoded.userId)?.status;
-    const currentStage = idea.workflow.find(item => item.approver_id === decoded.userId)?.stage_order;
-    const stageVisible = idea.current_stage === currentStage;
 
     if (!idea) {
         return (
@@ -94,15 +73,6 @@ export default async function IdeaPage({
                             Submitted by <span className="font-medium">{idea.submitted_by_name}</span>
                         </p>
                     )}
-                </div>
-
-                <div className="w-full sm:w-auto sm:min-w-[320px]">
-                    <ApprovalActions
-                        ideaId={Number(ideaId)}
-                        currentStatus={idea.status}
-                        stageStatus={currentStageStatus}
-                        stage={stageVisible}
-                    />
                 </div>
             </div>
 

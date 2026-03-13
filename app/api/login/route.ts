@@ -59,7 +59,6 @@ export async function POST(req: Request) {
     }
 
     const userRow = rows[0] as UserRow;
-    console.log("USER", userRow);
 
     const query2 = `
         SELECT 

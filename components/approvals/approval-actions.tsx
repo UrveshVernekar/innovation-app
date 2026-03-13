@@ -40,9 +40,6 @@ export default function ApprovalActions({
     const isFinal = ["APPROVED", "REJECTED"].includes(currentStatus || "");
     const isStage = ["APPROVED", "REJECTED"].includes(stageStatus || "");
 
-    console.log("STAGE STATUS", stageStatus);
-    console.log("STAGE", stage);
-
     async function submitAction() {
         if (!action) return;
 
