@@ -1,4 +1,3 @@
-// app/(app)/approvals/page.tsx
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 import { getPendingApprovals } from "@/lib/approvals";
@@ -17,13 +16,12 @@ type JwtPayload = {
 
 export default async function ApprovalsPage() {
     const token = (await cookies()).get("token")?.value;
-    if (!token) return null; // In prod → redirect("/login")
-
+    if (!token) return null;
     let decoded: JwtPayload;
     try {
         decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
     } catch {
-        return null; // or redirect
+        return null;
     }
 
     const approvals = await getPendingApprovals(decoded.userId);
@@ -38,7 +36,6 @@ export default async function ApprovalsPage() {
                     </p>
                 </div>
 
-                {/* Optional future stats/badges */}
                 <div className="flex items-center gap-3">
                     {approvals.length > 0 && (
                         <div className="flex items-center gap-2 rounded-full bg-amber-100 px-4 py-1.5 text-sm font-medium text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">

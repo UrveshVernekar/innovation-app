@@ -60,8 +60,6 @@ export async function getPendingApprovals(userId: number) {
             [userId]
         );
 
-        console.log("ROWS", rows);
-
         return rows;
     } finally {
         await db.end();
@@ -82,7 +80,7 @@ export async function processApproval({
     const db = await getDbConnection("innovation");
 
     try {
-        const stageProcess = await db.query(
+        await db.query(
             `
                 CALL process_innovation_stage_action(?, ?, ?, ?)
             `,
@@ -93,8 +91,6 @@ export async function processApproval({
                 comments
             ]
         );
-
-        console.log("STAGE PROCESS", stageProcess);
     } finally {
         await db.end();
     }
