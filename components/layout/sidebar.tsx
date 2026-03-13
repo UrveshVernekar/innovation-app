@@ -13,7 +13,7 @@ import {
     // UserCircle,
 } from "lucide-react";
 
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
@@ -166,6 +166,7 @@ export default function Sidebar({ userFullName }: SidebarProps) {
                         </Button>
                     </SheetTrigger>
                     <SheetContent side="left" className="w-72 p-6 bg-white dark:bg-zinc-900">
+                        <SheetTitle className="sr-only">Innovation</SheetTitle>
                         <NavContent
                             setOpen={setOpen}
                             handleLogout={handleLogout}
