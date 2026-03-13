@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation"; // ← add usePathname
 import {
     LayoutDashboard,
     Lightbulb,
@@ -10,7 +10,6 @@ import {
     Trophy,
     Menu,
     LogOut,
-    // UserCircle,
 } from "lucide-react";
 
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
@@ -30,8 +29,9 @@ interface NavContentProps {
 function NavContent({
     setOpen,
     handleLogout,
-    userFullName
+    userFullName,
 }: NavContentProps) {
+    const pathname = usePathname();
     const displayName = userFullName || "User";
 
     const initials = displayName
@@ -41,6 +41,13 @@ function NavContent({
         .slice(0, 2)
         .toUpperCase();
 
+    const isActive = (href: string) => {
+        if (href === "/") {
+            return pathname === "/";
+        }
+        return pathname.startsWith(href);
+    };
+
     return (
         <div className="flex flex-col h-full">
             <div className="flex-1">
@@ -48,42 +55,32 @@ function NavContent({
                     Innovation
                 </div>
 
-                <nav className="space-y-2 text-sm">
-                    <Link
-                        href="/"
-                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors"
-                        onClick={() => setOpen(false)}
-                    >
-                        <LayoutDashboard size={20} />
-                        Dashboard
-                    </Link>
+                <nav className="space-y-1 text-sm">
+                    {[
+                        { href: "/", label: "Dashboard", icon: LayoutDashboard },
+                        { href: "/innovations", label: "My Innovations", icon: Lightbulb },
+                        { href: "/approvals", label: "Approvals", icon: CheckCircle2 },
+                        { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
+                    ].map((item) => {
+                        const active = isActive(item.href);
 
-                    <Link
-                        href="/innovations"
-                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors"
-                        onClick={() => setOpen(false)}
-                    >
-                        <Lightbulb size={20} />
-                        My Innovations
-                    </Link>
-
-                    <Link
-                        href="/approvals"
-                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors"
-                        onClick={() => setOpen(false)}
-                    >
-                        <CheckCircle2 size={20} />
-                        Approvals
-                    </Link>
-
-                    <Link
-                        href="/leaderboard"
-                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors"
-                        onClick={() => setOpen(false)}
-                    >
-                        <Trophy size={20} />
-                        Leaderboard
-                    </Link>
+                        return (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                className={cn(
+                                    "flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all",
+                                    active
+                                        ? "bg-primary/10 text-primary font-medium border-l-4 border-primary pl-2"
+                                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                                )}
+                                onClick={() => setOpen(false)}
+                            >
+                                <item.icon size={20} />
+                                {item.label}
+                            </Link>
+                        );
+                    })}
                 </nav>
             </div>
 
@@ -103,10 +100,6 @@ function NavContent({
                             <div className="text-sm font-medium leading-tight truncate">
                                 {displayName}
                             </div>
-                            {/* Optional second line – role, email, etc. */}
-                            {/* <div className="text-xs text-muted-foreground truncate">
-                                {userRole || "Team Member"}
-                            </div> */}
                         </div>
                     </div>
                 </div>
@@ -166,7 +159,7 @@ export default function Sidebar({ userFullName }: SidebarProps) {
                         </Button>
                     </SheetTrigger>
                     <SheetContent side="left" className="w-72 p-6 bg-white dark:bg-zinc-900">
-                        <SheetTitle className="sr-only">Innovation</SheetTitle>
+                        <SheetTitle className="sr-only">Innovation Navigation</SheetTitle>
                         <NavContent
                             setOpen={setOpen}
                             handleLogout={handleLogout}
