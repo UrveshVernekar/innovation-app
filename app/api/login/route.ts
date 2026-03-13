@@ -111,7 +111,7 @@ export async function POST(req: Request) {
         process.env.JWT_SECRET!,
         // { expiresIn: '1d' }
         // { expiresIn: '5m' }
-        { expiresIn: '1h' }
+        { expiresIn: '4h' }
     );
 
     const userResponse = {
