@@ -92,7 +92,7 @@ function NavContent({
                 <Separator className="mb-4" />
 
                 <div className="px-3 py-3">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center gap-3">
                         <Avatar className="h-9 w-9 border">
                             <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
                                 {initials}
@@ -105,15 +105,15 @@ function NavContent({
                             </div>
                             {/* Optional second line – role, email, etc. */}
                             {/* <div className="text-xs text-muted-foreground truncate">
-                {userRole || "Team Member"}
-              </div> */}
+                                {userRole || "Team Member"}
+                            </div> */}
                         </div>
                     </div>
                 </div>
 
                 <Button
                     variant="ghost"
-                    className="w-full justify-start gap-3 p-3 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    className="w-full justify-center gap-3 p-3 text-destructive hover:bg-destructive/10 hover:text-destructive"
                     onClick={handleLogout}
                 >
                     <LogOut size={20} />
