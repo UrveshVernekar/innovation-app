@@ -1,0 +1,84 @@
+// components/layout/ProfileDropdown.tsx
+'use client';
+
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { LogOut, Settings, User } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+
+interface ProfileDropdownProps {
+    user: {
+        fullName: string;
+        role: string;
+    };
+}
+
+export default function ProfileDropdown({ user }: ProfileDropdownProps) {
+    const router = useRouter();
+    const tokens = user.fullName.split(' ').filter(Boolean);
+    const initials = tokens.length === 0 ? 'U' : (tokens[0][0] + (tokens[1]?.[0] || '')).toUpperCase();
+
+    async function handleLogout() {
+        try {
+            const res = await fetch('/api/logout', {
+                method: 'POST',
+                credentials: 'include',
+            });
+
+            if (res.ok) {
+                router.push('/login');
+                router.refresh();
+            } else {
+                alert('Logout failed. Please try again.');
+            }
+        } catch (err) {
+            console.error('Logout error:', err);
+            alert('Something went wrong. Please try again.');
+        }
+    }
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <div className="flex items-center gap-3 cursor-pointer pl-2">
+                    <div className="hidden sm:block text-right">
+                        <div className="text-sm font-semibold text-foreground">{user.fullName}</div>
+                        <div className="text-xs text-muted-foreground font-medium">{user.role}</div>
+                    </div>
+                    <Avatar className="h-9 w-9 border border-border flex-shrink-0">
+                        <AvatarFallback className="bg-gradient-to-br from-blue-600 to-indigo-600 text-white font-bold text-sm">
+                            {initials}
+                        </AvatarFallback>
+                    </Avatar>
+                </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 bg-card border border-border">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="cursor-pointer">
+                    <User className="mr-2 h-4 w-4" />
+                    Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer">
+                    <Settings className="mr-2 h-4 w-4" />
+                    Settings
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                    className="text-red-600 cursor-pointer focus:text-red-600"
+                    onClick={handleLogout}
+                >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign out
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+}
