@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { NextResponse } from "next/server";
 import { getLeaderboard } from "@/lib/leaderboard";
 
-export async function GET() {
+export async function GET(req: Request) {
     try {
         const token = (await cookies()).get("token")?.value;
 
@@ -14,7 +14,16 @@ export async function GET() {
         // Verify the token
         jwt.verify(token, process.env.JWT_SECRET!);
 
-        const leaderboardData = await getLeaderboard();
+        // Parse date range parameter
+        const { searchParams } = new URL(req.url);
+        const range = (searchParams.get("range") || "all") as "month" | "quarter" | "all";
+
+        // Validate range values
+        if (range !== "month" && range !== "quarter" && range !== "all") {
+            return NextResponse.json({ error: "Invalid range value" }, { status: 400 });
+        }
+
+        const leaderboardData = await getLeaderboard(range);
         return NextResponse.json({ success: true, data: leaderboardData });
     } catch (err) {
         console.error("Leaderboard GET Error:", err);
