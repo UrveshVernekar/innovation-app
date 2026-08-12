@@ -1,0 +1,11 @@
+services:
+  innovation-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: innovation-app
+    ports:
+      - "8086:3000"
+    env_file:
+      - .env
+    restart: always
