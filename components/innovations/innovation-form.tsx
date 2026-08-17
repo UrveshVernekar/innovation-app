@@ -1,10 +1,11 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -18,8 +19,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Lightbulb } from "lucide-react";
+import { Loader2, Lightbulb, Paperclip } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FileUploader } from "@/components/ui/file-uploader";
 
 // ── Schema ────────────────────────────────────────────────
 const formSchema = z.object({
@@ -34,6 +36,7 @@ type FormValues = z.infer<typeof formSchema>;
 export default function InnovationForm() {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
+    const [files, setFiles] = useState<File[]>([]);
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
@@ -47,23 +50,36 @@ export default function InnovationForm() {
 
     async function onSubmit(values: FormValues) {
         startTransition(async () => {
-            const res = await fetch("/api/innovations", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(values),
-            });
+            try {
+                const formData = new FormData();
+                formData.append("title", values.title);
+                formData.append("description", values.description);
+                formData.append("expected_benefit", values.expected_benefit || "");
+                formData.append("category", values.category || "");
 
-            if (res.ok) {
-                form.reset();
-                // Option A: redirect to list
-                router.push("/");
-                router.refresh();
+                files.forEach((file) => {
+                    formData.append("files", file);
+                });
 
-                // Option B: stay & show success toast (recommended UX)
-                // toast.success("Idea submitted successfully!")
-            } else {
-                // toast.error("Submission failed. Please try again.")
-                alert("Failed to submit idea. Please try again.");
+                const res = await fetch("/api/innovations", {
+                    method: "POST",
+                    body: formData,
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    form.reset();
+                    setFiles([]);
+                    toast.success("Innovation idea and attachments submitted successfully!");
+                    router.push("/");
+                    router.refresh();
+                } else {
+                    toast.error(data.error || "Failed to submit idea. Please try again.");
+                }
+            } catch (err) {
+                console.error("Submission error:", err);
+                toast.error("An unexpected error occurred during submission.");
             }
         });
     }
@@ -72,7 +88,7 @@ export default function InnovationForm() {
         <Card className="border-t-4 border-t-primary shadow-sm">
             <CardHeader className="pb-6">
                 <div className="flex items-center gap-3">
-                    <Lightbulb className="h-7 w-7 text-primary" />
+                    <Lightbulb className="h-7 w-7 text-primary shrink-0" />
                     <div>
                         <CardTitle className="text-2xl">Share Your Innovation</CardTitle>
                         <CardDescription className="mt-1.5">
@@ -160,6 +176,21 @@ export default function InnovationForm() {
                             )}
                         />
 
+                        {/* File Upload Section */}
+                        <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                            <div className="flex items-center gap-2">
+                                <Paperclip className="h-4 w-4 text-primary" />
+                                <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                                    Attachments & Supporting Documents
+                                </span>
+                            </div>
+                            <FileUploader
+                                files={files}
+                                onFilesChange={setFiles}
+                                disabled={isPending}
+                            />
+                        </div>
+
                         <div className="pt-4">
                             <Button
                                 type="submit"
@@ -170,7 +201,7 @@ export default function InnovationForm() {
                                 {isPending ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Submitting...
+                                        Submitting Idea & Files...
                                     </>
                                 ) : (
                                     "Submit Idea"

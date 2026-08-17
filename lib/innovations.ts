@@ -20,16 +20,20 @@ interface InnovationRow extends RowDataPacket {
     created_at: Date;
 }
 
-export async function createInnovation(data: CreateInnovationParams) {
+export async function createInnovation(data: CreateInnovationParams): Promise<number> {
     const db = await getDbConnection("innovation");
 
     try {
-        await db.query(
+        const [resultSets] = await db.query<any[]>(
             `
                 CALL initiate_innovation(?, ?, ?, ?, ?, ?, ?, ?, ?);
             `,
             [data.companyId, data.factoryId, data.departmentId, data.userId, 1, data.title, data.description, data.expected_benefit, data.category]
         );
+        // The first result set from stored procedure contains SELECT v_idea_id AS idea_id
+        const firstSet = Array.isArray(resultSets) ? resultSets[0] : null;
+        const ideaId = firstSet && firstSet[0] ? firstSet[0].idea_id : 0;
+        return ideaId;
     } finally {
         await db.end();
     }
