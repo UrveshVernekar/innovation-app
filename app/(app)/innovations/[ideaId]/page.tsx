@@ -1,4 +1,5 @@
 import { getIdeaDetails } from "@/lib/approvals";
+import { getAttachmentsByIdea } from "@/lib/attachments";
 import { Badge } from "@/components/ui/badge";
 import {
     Card,
@@ -11,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { AlertCircle, Clock, CheckCircle2, XCircle } from "lucide-react";
+import { IdeaDetailAttachments } from "@/components/innovations/idea-detail-attachments";
 
 export default async function IdeaPage({
     params,
@@ -18,7 +20,9 @@ export default async function IdeaPage({
     params: Promise<{ ideaId: string }>;
 }) {
     const { ideaId } = await params;
-    const idea = await getIdeaDetails(Number(ideaId));
+    const numIdeaId = Number(ideaId);
+    const idea = await getIdeaDetails(numIdeaId);
+    const attachments = await getAttachmentsByIdea(numIdeaId);
 
     if (!idea) {
         return (
@@ -57,9 +61,9 @@ export default async function IdeaPage({
                         >
                             {idea.status}
                         </Badge>
-                        {idea.submitted_at && (
+                        {idea.created_at && (
                             <span className="text-sm text-muted-foreground">
-                                Submitted {formatDistanceToNow(new Date(idea.submitted_at), { addSuffix: true })}
+                                Submitted {formatDistanceToNow(new Date(idea.created_at), { addSuffix: true })}
                             </span>
                         )}
                     </div>
@@ -80,7 +84,7 @@ export default async function IdeaPage({
 
             {/* CONTENT GRID */}
             <div className="grid gap-8 lg:grid-cols-[2fr_0.9fr]">
-                {/* Left – Details */}
+                {/* Left – Details & Attachments */}
                 <Card className="shadow-sm">
                     <CardHeader>
                         <CardTitle>Idea Details</CardTitle>
@@ -121,6 +125,12 @@ export default async function IdeaPage({
                                 </div>
                             )}
                         </div>
+
+                        {/* Attachments Section */}
+                        <IdeaDetailAttachments
+                            ideaId={numIdeaId}
+                            initialAttachments={attachments}
+                        />
                     </CardContent>
                 </Card>
 
@@ -175,7 +185,6 @@ export default async function IdeaPage({
                                         <h4 className="font-semibold">{stage.stage_name}</h4>
                                         <p className="mt-0.5 text-sm capitalize text-muted-foreground">
                                             {stage.status.toLowerCase()}
-                                            {stage.approved_by_name && ` • by ${stage.approved_by_name}`}
                                         </p>
                                     </div>
                                 </div>
