@@ -11,25 +11,30 @@ interface ApprovalRow extends RowDataPacket {
 }
 
 interface IdeaRow extends RowDataPacket {
-    id: number
-    title: string
-    description: string
-    expected_benefit: string
-    status: string
-    category?: string
-    department?: string
-    current_stage?: number
-    submitted_by_name?: string
-    submitted_by_email?: string
-    created_at: Date
-    submitted_at?: Date
+    id: number;
+    title: string;
+    description: string;
+    expected_benefit: string;
+    status: string;
+    category?: string;
+    department?: string;
+    factory?: string;
+    current_stage?: number;
+    submitted_by_name?: string;
+    submitted_by_email?: string;
+    created_at: Date;
 }
 
-interface WorkflowRow extends RowDataPacket {
-    workflow_stage_id: number
-    stage_name: string
-    status: string
-    stage_order: number
+export interface WorkflowStageDetail extends RowDataPacket {
+    workflow_stage_id: number;
+    stage_name: string;
+    status: string;
+    stage_order: number;
+    points_on_approval?: number;
+    approver_id?: number;
+    approver_name?: string;
+    comments?: string;
+    actioned_at?: Date | string;
 }
 
 export async function getPendingApprovals(userId: number) {
@@ -113,28 +118,41 @@ export async function getIdeaDetails(ideaId: number) {
                 ii.current_stage_id AS current_stage,
                 CONCAT(ud.first_name,' ',ud.last_name) AS submitted_by_name,
                 ud.email AS submitted_by_email,
+                dm.dept_name AS department,
+                fm.factory_name AS factory,
                 ii.created_at
             FROM innovation_ideas ii
             LEFT JOIN org_db.user_details ud
                 ON ud.user_id = ii.submitted_by
+            LEFT JOIN org_db.department_master dm
+                ON dm.id = ii.department_id
+            LEFT JOIN org_db.factory_master fm
+                ON fm.id = ii.factory_id
             WHERE ii.id = ?
             `,
             [ideaId]
         );
 
         const idea = ideaRows[0];
+        if (!idea) return null;
 
-        const [workflowRows] = await db.query<WorkflowRow[]>(
+        const [workflowRows] = await db.query<WorkflowStageDetail[]>(
             `
             SELECT
                 aws.id AS workflow_stage_id,
                 aws.stage_name,
                 aws.stage_order,
+                aws.points_on_approval,
                 iat.status,
-                iat.approver_id
+                iat.approver_id,
+                iat.comments,
+                iat.actioned_at,
+                CONCAT(ud.first_name, ' ', ud.last_name) AS approver_name
             FROM innovation_approval_transactions iat
             JOIN innovation_approval_workflow_stages aws
                 ON aws.id = iat.workflow_stage_id
+            LEFT JOIN org_db.user_details ud
+                ON ud.user_id = iat.approver_id
             WHERE iat.idea_id = ?
             ORDER BY aws.stage_order
             `,

@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { getFileIcon } from "@/components/ui/file-uploader";
 import { AttachmentRecord } from "@/lib/attachments";
+import { safeFormatDate } from "@/lib/utils";
 
 interface AttachmentGalleryProps {
     ideaId: number;
@@ -117,7 +118,7 @@ export function AttachmentGallery({
                                     </p>
 
                                     <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                                        {new Date(att.uploaded_at).toLocaleDateString()}
+                                        {safeFormatDate(att.uploaded_at, "dd MMM yyyy")}
                                     </p>
                                 </div>
                             </div>
